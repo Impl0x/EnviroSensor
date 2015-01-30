@@ -95,16 +95,23 @@ void testGPS()
     if (softwareSerial.available())
         if (gps.encode(softwareSerial.read()))
             newdata = true;
-
-    else writeStringSD("SS Unavailable");
-
+    else {
+        File dataFile = SD.open(FILE_NAME, FILE_WRITE);
+        if(dataFile) {
+            dataFile.print("SS UNAVAILABLE");
+            dataFile.print("\n");
+        }
+        dataFile.close();
+    }
     if(newdata) gpsdump(gps);
-}
-
-void writeStringSD(char text[])
-{
-    File dataFile = SD.open(FILE_NAME, FILE_WRITE);
-    if (dataFile) datafile.println(text);
+    else {
+        File dataFile = SD.open(FILE_NAME, FILE_WRITE);
+        if (dataFile) {
+            dataFile.print("No new data available");
+            dataFile.print("\n");
+        }
+        dataFile.close();
+    }
 }
 
 //GPS helper functions
@@ -163,7 +170,7 @@ bool feedgps()
 // Perform initial setup
 void setup()
 {
-    delay(5000);
+    delay(10000);
 
     Serial.begin(SS_BAUD);
     softwareSerial.begin(SS_BAUD);  
@@ -205,5 +212,5 @@ void loop()
 
 */
     testGPS();
-    sleep(1000);
+    delay(1000);
 }
