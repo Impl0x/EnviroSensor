@@ -8,8 +8,8 @@
 #define SERIAL_BAUD 115200
 
 // SoftwareSerial values
-#define RX_PIN  19
-#define TX_PIN  18
+#define RX_PIN  0
+#define TX_PIN  1
 #define SS_BAUD 57600
 
 // PM sensor values
@@ -17,7 +17,7 @@
 #define SAMPLE_INTERVAL 1000 // (milliseconds)
 
 // SD card values
-#define CS_PIN     4
+#define CS_PIN     10
 #define FILE_NAME "log.txt"
 
 // Ozone sensor values
@@ -68,10 +68,12 @@ void testSDWrite()
 // Prints PM information through the serial port
 void serialPrintPM(unsigned long lpo, float r, float c)
 {
+        /*
 	Serial.print("PM: { ");
 	Serial.print("LowPulseOccupancy = "); Serial.print(lpo); Serial.print(", ");
 	Serial.print("Ratio = "); Serial.print(r); Serial.print(", ");
 	Serial.print("Concentration = "); Serial.print(c); Serial.println(" }");
+        */
 }
 
 // Tests the functionality of the PM sensor
@@ -92,13 +94,14 @@ void testGPS()
         bool newdata = false;
         for (unsigned long start2 = millis(); millis() - start2 < 1000;)
         {
-          Serial.print(softwareSerial.available());
-          if (softwareSerial.available())
+          if (softwareSerial.available()) // 1 
           {
-            if (gps.encode(softwareSerial.read())) // Did a new valid sentence come in?
+            if (gps.encode(softwareSerial.read())) // 1 // Did a new valid sentence come in?
               newdata = true;
-            else
+            else {
               Serial.print("newdata not available\n");
+              Serial.print(softwareSerial.read());
+            }
             
           } else {
             Serial.print("ss not available\n");
@@ -124,11 +127,10 @@ void gpsdump(TinyGPS &gps)
 
 static void print_float(float val, int len, int prec)
 {
-  Serial.print(",");
-  Serial.print(val, prec);
+  //Serial.print(",");
+  //Serial.print(val, prec);
   
-  /*
-  File dataFile3 = SD.open(FILENAME, FILE_WRITE);
+  File dataFile3 = SD.open(FILE_NAME, FILE_WRITE);
   if(dataFile3)
   {
     //Serial.print(",");
@@ -137,9 +139,9 @@ static void print_float(float val, int len, int prec)
     dataFile3.print(val, prec);
   }
   else
-    yellowLight();
+    Serial.println("datafile writing failed");
+    //yellowLight();
   dataFile3.close();
-  */
   
 }
 
@@ -150,11 +152,12 @@ void print_date(TinyGPS &gps)
   unsigned long age;
   gps.crack_datetime(&year, &month, &day, &hour, &minute, &second, &hundredths, &age); 
   
+  /*
   Serial.print(",");
   Serial.print(month);
   Serial.print(",");
   Serial.print(day);
-  Serial.print(",");
+  Serial.print(","); 
   Serial.print(year);
   Serial.print(",");
   Serial.print(hour);
@@ -162,6 +165,18 @@ void print_date(TinyGPS &gps)
   Serial.print(minute);
   Serial.print(",");
   Serial.print(second);
+  */
+}
+
+
+bool feedgps()
+{
+  while (softwareSerial.available())
+  {
+    if (gps.encode(softwareSerial.read()))
+      return true;
+  }
+  return false;
 }
 
 // ---------------------------------
@@ -170,13 +185,14 @@ void print_date(TinyGPS &gps)
 // Perform initial setup
 void setup()
 {
-        delay(5000);
+        delay(15000);
   
-	Serial.begin(SERIAL_BAUD);
+	Serial.begin(SS_BAUD);
 	softwareSerial.begin(SS_BAUD);  
 
         // SD Card
-        //testSDInitialize();
+        testSDInitialize();
+        testSDWrite();
         
         // gps?
         //the following Turned off all NMEA sentences except RMC
@@ -188,6 +204,8 @@ void setup()
 
 void loop()
 {
+        //Serial.println("ksjdkljfsdfsfsd");
+  
         // SD Card
         //testSDWrite();
         
