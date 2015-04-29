@@ -278,7 +278,7 @@ void loop() {
         logfile.print(DHT.temperature);
         logfile.print(", ");
         logfile.print(DHT.humidity); 
-        logfile.print(", ");          
+        logfile.println(", ");          
         
         //pm sensor
         duration = pulseIn(pin, LOW);
@@ -302,7 +302,7 @@ void loop() {
         //Serial.println();
         //logfile.print("ozone ");
         logfile.print(ozone);
-        logfile.println(", ");
+        logfile.print(", ");
               
       }
       logfile.flush();
